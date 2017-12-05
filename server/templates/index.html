@@ -104,6 +104,12 @@
               .attr("x", function(d) { return x(d.zh); })
               .attr("width", x.bandwidth())
               .attr("y", function(d) { return y(d.my); })
+              .attr("height", 0)
+              .transition()
+              .duration(200)
+              .delay(function (d, i) {
+                return i * 150;
+              })
               .attr("height", function(d) { return height - y(d.my); });
 
           // add the x Axis
