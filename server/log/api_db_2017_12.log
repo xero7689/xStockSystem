@@ -1,4 +1,0 @@
-name 'sql' is not defined
-(1064, "You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ') as my, d.date as dd \n             from daily as d \n        \n                 w' at line 4")
-
-
