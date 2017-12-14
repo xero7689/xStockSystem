@@ -142,6 +142,16 @@ class StockMySQL(BaseDBAdapter):
         """
         return (sql, sql_args)
 
+    @commit_handle('get')
+    def get_daily_price(self, stock_id):
+        sql_args = (stock_id,)
+        sql = """
+        SELECT date, price from daily
+        WHERE stock_id = %s
+        ORDER BY date;
+        """
+        return (sql, sql_args)
+
 if __name__ == "__main__":
     db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn', 'taiwan_stock')
     #print(db.get_daily(1101))
