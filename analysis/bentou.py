@@ -8,6 +8,7 @@ def count_bentou(stock_id):
     df = get_stock_info(stock_id)
     try:
         df['date'] = pd.to_datetime(df['date'])
+        df = df.sort('date')
     except Exception as e:
         #print(e)
         for row in df['date'].iteritems():
@@ -56,5 +57,8 @@ if __name__ == '__main__':
         bc = count_bentou(stock_id)
         bc_result.append((stock_id, zh_name, bc))
     bc_result = sorted(bc_result, key=lambda bc_result: bc_result[2])
-    for bc in bc_result:
-        print('[{}][{}]-{}'.format(bc[0], bc[1], bc[2]))
+    with open('bentou.lst', 'w+') as f:
+        for bc in bc_result[::-1]:
+            msg = '[{}][{}]-{}'.format(bc[0], bc[1], bc[2])
+            f.write(msg+'\n')
+            print(msg)
