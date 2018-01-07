@@ -12,7 +12,7 @@ import time
 from utils import year_generator
 from color_print import color_print
 from settings import USER, PASSWORD
-db = pymysql.connect('localhost', USER, PASSWORD, 'taiwan_stock',
+db = pymysql.connect('127.0.0.1', USER, PASSWORD, 'taiwan_stock',
                      charset='utf8')
 cursor = db.cursor()
 
