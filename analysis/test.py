@@ -17,8 +17,8 @@ if __name__ == '__main__':
         if corr > 0.7:
             zh1 = get_zh_name(sid1)[0][0]
             zh2 = get_zh_name(sid2)[0][0]
-            with open('positive.lst') as f:
-                f.write('{}\t{}\t{}'.format())
+            with open('positive.lst', 'w+') as f:
+                f.write('{}\t{}\t{}'.format(zh1, zh2, corr))
             print('{}\t{}\tCorr: {}'.format(zh1, zh2, corr))
         elif corr < 0:
             zh1 = get_zh_name(sid1)[0][0]
