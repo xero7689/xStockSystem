@@ -93,6 +93,42 @@ class BaseDBAdapter(object):
 class StockMySQL(BaseDBAdapter):
     def __init__(self, host, user, password, db, *args, **kwargs):
         super(StockMySQL, self).__init__(host, user, password, db)
+        self._create_daily_table()
+        self._create_stock_list_table()
+
+    @commit_handle('set')
+    def _create_daily_table(self):
+        sql_args = None
+        sql = """
+        CREATE TABLE IF NOT EXISTS `daily` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `date` date DEFAULT NULL,
+          `stock_id` varchar(255) DEFAULT NULL,
+          `price` float DEFAULT NULL,
+          `yield` float DEFAULT NULL,
+          `pe` float DEFAULT NULL,
+          `pbr` float DEFAULT NULL,
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `date` (`date`,`stock_id`),
+          KEY `daily_sid` (`stock_id`)
+        ) ENGINE=InnoDB AUTO_INCREMENT=21221302 DEFAULT CHARSET=utf8
+        """
+        return (sql, sql_args)
+
+    @commit_handle('set')
+    def _create_stock_list_table(self):
+        sql_args = None
+        sql = """
+        CREATE TABLE IF NOT EXISTS `stock_list` (
+          `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+          `stock_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `zh_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          `eng_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          `stock_cate` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB AUTO_INCREMENT=1793 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """
+        return (sql, sql_args)
 
     @commit_handle('get')
     def select_latest_date_by_sid(self, sid):
