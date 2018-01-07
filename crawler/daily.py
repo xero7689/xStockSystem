@@ -16,21 +16,6 @@ db = pymysql.connect('localhost', USER, PASSWORD, 'taiwan_stock',
                      charset='utf8')
 cursor = db.cursor()
 
-_create = """
-CREATE TABLE IF NOT EXISTS daily (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  date date DEFAULT NULL,
-  stock_id varchar(255) DEFAULT NULL,
-  price float DEFAULT NULL,
-  yield float DEFAULT NULL,
-  pe float DEFAULT NULL,
-  pbr float DEFAULT NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY date (date,`sid`),
-  KEY daily_sid (sid)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8
-"""
-
 insert_daily_sql = """
 INSERT IGNORE INTO daily
 (date, stock_id, price, yield, pe, pbr)
@@ -45,9 +30,6 @@ bwibbw_url = 'http://www.tse.com.tw/exchangeReport/BWIBBU?response=json&date={}&
 headers = { 'User-Agent': 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/61.0.3163.100 Chrome/61.0.3163.100 Safari/537.36',
         'Referer': 'http://www.tse.com.tw/zh/page/trading/exchange/BWIBBU.html'
         }
-
-cursor.execute(_create)
-db.commit()
 
 # Get Stock_id
 _get_sid = """
@@ -173,7 +155,7 @@ if __name__ == '__main__':
     """
 
     # 化學-1747
-    cate_list = ['其它電子']
+    cate_list = ['紡織']
 
     for cate in cate_list:
         cursor.execute(_get_by_cate, (cate,))
