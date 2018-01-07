@@ -11,7 +11,8 @@ import time
 
 from utils import year_generator
 from color_print import color_print
-db = pymysql.connect('localhost', 'xero', 'uscrfycn', 'taiwan_stock',
+from settings import USER, PASSWORD
+db = pymysql.connect('localhost', USER, PASSWORD, 'taiwan_stock',
                      charset='utf8')
 cursor = db.cursor()
 
