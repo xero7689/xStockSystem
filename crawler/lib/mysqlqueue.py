@@ -11,7 +11,7 @@ if (sys.version_info > (3, 0)):
 else:
     import MySQLdb as mysql
 
-from .mylogger import MyLogger
+from mylogger import MyLogger
 
 def commit_handle(exec_type): 
     """ Decorator to handle database commition
@@ -141,6 +141,4 @@ class StockMySQL(BaseDBAdapter):
     
 
 if __name__ == "__main__":
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn', 'taiwan_stock')
-    #print(db.get_daily(1101))
-    print(db.select_latest_date_by_sid(1101))
+    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn7689', 'taiwan_stock')

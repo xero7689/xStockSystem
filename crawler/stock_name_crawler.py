@@ -13,6 +13,7 @@ except ImportError:
     import urllib.parse as urlparse  # For python3
 
 from date_handler import year_generator
+from settings import USER, PASSWORD
 
 # Yahoo Settings
 YAHOO_URL = 'https://tw.stock.yahoo.com'
@@ -25,7 +26,7 @@ fake_header['Accept-Encoding'] = 'gzip, deflate, br'
 fake_header['Referer'] = 'https://www.google.com.tw/'
 
 # Mysql Settings
-db = pymysql.connect('localhost', 'xero', 'uscrfycn', 'taiwan_stock', charset='utf8')
+db = pymysql.connect('localhost', USER, PASSWORD, 'taiwan_stock', charset='utf8')
 db.commit()
 cursor = db.cursor()
 
@@ -97,7 +98,7 @@ for category_a in stock_categories:
     cate = category_a.text
     href = category_a.attrib['href']
     category_url = urlparse.urljoin(YAHOO_URL, href)
-    print('[*] {}'.format(category_url))
+    print('[*] {}'.format(category_url.encode('utf8')))
     crawl_yahoo_stock_id(category_url, cate)
     time.sleep(1)
 
