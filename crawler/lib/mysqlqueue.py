@@ -8,10 +8,10 @@ from functools import wraps
 
 if (sys.version_info > (3, 0)): 
     import pymysql as mysql
+    from .mylogger import MyLogger
 else:
     import MySQLdb as mysql
-
-from mylogger import MyLogger
+    from mylogger import MyLogger
 
 def commit_handle(exec_type): 
     """ Decorator to handle database commition
