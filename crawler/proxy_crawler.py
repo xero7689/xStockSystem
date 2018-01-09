@@ -33,6 +33,7 @@ class ProxyCrawler(object):
     def __init__(self):
         self.mysql = mysql.connect('localhost', 'xero', 'uscrfycn7689', 'proxy_server')
         self.session = requests.Session()
+        self.logger = MyLogger(name='proxy', prefix='proxy')
 
     def run(self):
         for website in self._proxy_list_website:
@@ -43,12 +44,12 @@ class ProxyCrawler(object):
             #response = self.session.get(url, headers=self._headers, timeout=self._timeout)
             response = requests.get(url, timeout=self._timeout)
         except requests.exceptions.ReadTimeout:
+            self.logger.debug('[!] timeout')
             print('[-] requests timeout.')
         return response
 
     def fetch_proxy(self, website):
         response = self.get(website)
-        print(response.content)
         tree = etree.HTML(response.content)
         proxy_elements = tree.xpath('.//tr')
         cursor = self.mysql.cursor()
@@ -68,9 +69,9 @@ class ProxyCrawler(object):
                proxy_info[6] = 0
            try:
                cursor.execute('insert ignore into `ssl_proxy` (`ip`, `port`, `code`, `country`, `anonimity`, `google`, `https`, `last_check`) values (INET6_ATON(%s), %s, %s, %s, %s, %s, %s, now())', proxy_info)
-               print('[+] {}'.format(proxy_info))
+               self.logger.info('[+] {}'.format(proxy_info))
            except Exception as e:
-               print('[-] {}'.format(proxy_info))
+               self.logger.warning('[-] {}'.format(proxy_info))
                continue
         self.mysql.commit()
         cursor.close()
