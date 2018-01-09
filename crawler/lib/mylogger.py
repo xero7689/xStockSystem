@@ -6,7 +6,7 @@ import time
 
 #PROJECT_DIR = os.path.abspath(os.path.join(os.path.pardir, '..'))
 PROJECT_DIR = os.path.abspath('../')
-DEFAULT_LOG_DIR = os.path.join(PROJECT_DIR, 'log/')
+DEFAULT_LOG_DIR = os.path.join(PROJECT_DIR, 'logs/')
 
 loggers = {}
 
