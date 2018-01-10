@@ -138,7 +138,3 @@ class StockMySQL(BaseDBAdapter):
         WHERE stock_id = %s;
         """
         return (sql, sql_args)
-    
-
-if __name__ == "__main__":
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn7689', 'taiwan_stock')

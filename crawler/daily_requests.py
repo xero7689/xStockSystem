@@ -16,7 +16,8 @@ rc = RequestsCrawler()
 # DB Init
 from utils import year_generator
 from color_print import color_print
-db = pymysql.connect('localhost', 'xero', 'uscrfycn', 'taiwan_stock',
+from settings import *
+db = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock',
                      charset='utf8')
 cursor = db.cursor()
 

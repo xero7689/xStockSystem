@@ -10,6 +10,8 @@ import ipdb
 from lxml import etree
 import requests
 
+from settings import *
+
 class ProxyCrawler(object):
     _headers = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0",
@@ -31,7 +33,7 @@ class ProxyCrawler(object):
     ]
 
     def __init__(self):
-        self.mysql = mysql.connect('localhost', 'xero', 'uscrfycn7689', 'proxy_server')
+        self.mysql = mysql.connect(HOST, USER, PASSWORD, 'proxy_server')
         self.session = requests.Session()
         self.logger = MyLogger(name='proxy', prefix='proxy')
 
