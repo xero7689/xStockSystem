@@ -38,7 +38,7 @@ def getPrice():
 
 @app.route('/mysql')
 def mysql():
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn', 'taiwan_stock')
+    db = StockMySQL(HOST, USER, PASSWORD, 'taiwan_stock')
     response = []
     data = db.get_rank_by_date(before='2017-12-01', after='2017-01-01')
 
