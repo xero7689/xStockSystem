@@ -120,6 +120,20 @@
           // add the y Axis
           svg.append("g").call(d3.axisLeft(y));
 
+          //
+        const svg2 = d3.select('body').append('svg')
+                     .attr('width', 1366)
+                     .attr('height', 768);
+        
+        svg2.selectAll('circle')
+           .data(data)
+           .enter().append('circle')
+           .attr("cx", function(d) { return Math.random() * 100; })
+           .attr("cy", function(d) { return Math.random() * 100; })
+           .attr('r', function(d) { return d.my * 10 });
+
+    </script>
+    <script>
 
     </script>
     
