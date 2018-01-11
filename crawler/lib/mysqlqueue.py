@@ -90,6 +90,23 @@ class BaseDBAdapter(object):
         if self.connect:
             self.connect.close()
 
+class ProxyMySQL(BaseDBAdapter):
+    def __init__(self, host, user, password, db='proxy_server', *args, **kwargs):
+        super(ProxyMySQL, self).__init__(host, user, password, db)
+
+    @commit_handle('get')
+    def fetch(self):
+        sql_args = None
+        sql = """
+        SELECT id, INET6_NTOA(ip), port, delay from ssl_proxy
+        WHERE delay < 5
+        AND delay >= 0
+        AND https = 0
+        """
+        #ORDER by delay, last_check;
+        #"""
+        return (sql, sql_args)
+
 class StockMySQL(BaseDBAdapter):
     def __init__(self, host, user, password, db, *args, **kwargs):
         super(StockMySQL, self).__init__(host, user, password, db)
