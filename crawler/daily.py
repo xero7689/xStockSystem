@@ -1,4 +1,17 @@
 # -*- coding: utf-8 -*-
+"""
+TWSEC Daily Information Crawler
+
+Todo:
+    - http://www.tse.com.tw/exchangeReport/STOCK_DAY?response=json&date={}&stockNo={}
+
+Done:
+    - http://www.tse.com.tw/exchangeReport/STOCK_DAY_AVG?response=json&date={}&stockNo={}
+    - http://www.tse.com.tw/exchangeReport/BWIBBU?response=json&date={}&stockNo={}
+
+Issue:
+    - Daily date larger than 2018
+"""
 
 import sys, os
 import re
