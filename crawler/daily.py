@@ -41,6 +41,8 @@ price_url = 'http://www.tse.com.tw/exchangeReport/STOCK_DAY_AVG?response=json&da
 
 bwibbw_url = 'http://www.tse.com.tw/exchangeReport/BWIBBU?response=json&date={}&stockNo={}'
 
+max_min_url = 'http://www.tse.com.tw/exchangeReport/STOCK_DAY?response=json&date={}&stockNo={}'
+
 headers = { 'User-Agent': 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/61.0.3163.100 Chrome/61.0.3163.100 Safari/537.36',
         'Referer': 'http://www.tse.com.tw/zh/page/trading/exchange/BWIBBU.html'
         }
@@ -52,6 +54,30 @@ SELECT stock_id FROM stock_list
 
 # Global proxy queue
 proxy_queue = ProxyQueue()
+
+def crawl_price():
+    pass
+
+def crawl_bwibbw():
+    pass
+
+def crawl_max_min(sid, date):
+    color_print('  --> Fetch max min data', 'yellow')
+    max_retry = 5
+    while True:
+        try:
+            response = requests.get(max_min_url.format(date, sid), headers=headers)
+            data = json.loads(response.content)['data']
+            break
+        except KeyError as ke:
+            if max_retry > 0:
+                color_print('[!] Key Error, max retry {}.'.format(max_retry),
+                            'red')
+                time.sleep(10)
+                continue
+            else:
+                raise ke
+    return data
 
 def crawl_daily(date, sid):
     global proxy_queue
@@ -178,7 +204,7 @@ if __name__ == '__main__':
 
     # 化學-1747
     cate_list = ['電子零組件']
-
+    """
     for cate in cate_list:
         cursor.execute(_get_by_cate, (cate,))
         sid_lists = cursor.fetchall()
@@ -197,10 +223,11 @@ if __name__ == '__main__':
             for date in year_generator(start_year=2012):
                 crawl_daily(date, sid)
                 time.sleep(1)
-
+    """
     """
     #crawl_daily(20130430, 2597)
     for date in year_generator(start_year=2011):
         crawl_daily(date, 1307)
         time.sleep(5)
     """
+    print(crawl_max_min(2597, 20130430))
