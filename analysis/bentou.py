@@ -1,14 +1,14 @@
 import os, sys
 import pandas as pd
 import datetime
-from lib.mysql import *
 from analyze_stock import *
+from lib.mysql import get_stock_info
 
-def count_bentou(stock_id):
+def count_bentou(stock_id, start_date, end_date, delta=7, pr=0.02):
     df = get_stock_info(stock_id)
     try:
         df['date'] = pd.to_datetime(df['date'])
-        df = df.sort('date')
+        #df = df.sort('date')
     except Exception as e:
         #print(e)
         for row in df['date'].iteritems():
@@ -19,8 +19,8 @@ def count_bentou(stock_id):
         raise e
         return 0
 
-    start_date = datetime.datetime(2017, 10, 1)
-    end_date = datetime.datetime(2017, 12, 31)
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     mask = (df['date'] >= start_date) & (df['date'] <= end_date)
     mean_price = pd.DataFrame.mean(df['price'][mask])
     #print('{}-{}\tmean: {}'.format(start_date, end_date, mean_price))
@@ -28,7 +28,7 @@ def count_bentou(stock_id):
     tmp_start = start_date
     count = 0
     while True:
-        tmp_fin = tmp_start + datetime.timedelta(days=7)
+        tmp_fin = tmp_start + datetime.timedelta(days=delta)
         if tmp_fin > end_date:
             break
         else:
@@ -41,24 +41,11 @@ def count_bentou(stock_id):
             # Find Max and Min Price
             tmp_max_p = max(tmp_mask_price)
             tmp_min_p = min(tmp_mask_price)
-            if (tmp_max_p / mean_price)-1 > 0.02:
+            if (tmp_max_p / mean_price)-1 > pr:
                 count += 1
-            if 1-(tmp_min_p / mean_price) > 0.02:
+            if 1-(tmp_min_p / mean_price) > pr:
                 count += 1
             tmp_start = tmp_fin
     return count
 
-if __name__ == '__main__':
-    sids = get_all_stock_id()
-    bc_result = []
-    for index, row in sids.iterrows():
-        stock_id = row['stock_id']
-        zh_name = get_zh_name(stock_id)[0][0]
-        bc = count_bentou(stock_id)
-        bc_result.append((stock_id, zh_name, bc))
-    bc_result = sorted(bc_result, key=lambda bc_result: bc_result[2])
-    with open('bentou.lst', 'w+') as f:
-        for bc in bc_result[::-1]:
-            msg = '[{}][{}]-{}'.format(bc[0], bc[1], bc[2])
-            f.write(msg+'\n')
-            print(msg)
+

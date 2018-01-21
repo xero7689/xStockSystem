@@ -10,6 +10,8 @@ import ipaddress
 from lxml import etree
 from bs4 import BeautifulSoup
 
+from lib.mysqlqueue import ProxyMySQL
+
 def is_valid_ip(addr):
     try:
         ipaddress.ip_address(addr)
@@ -56,17 +58,6 @@ class RequestsCrawler(object):
             except requests.exceptions.ReadTimeout:
                 print('[-] requests timeout.')
         return response
-
-    def _update_proxy(self):
-        raw_proxy_response = self.get('https://www.sslproxies.org/')
-        tree = etree.HTML(raw_proxy_response.content)
-        proxy_elements = tree.xpath('.//tr')
-        for element in proxy_elements[1:]:
-            _ip = element.getchildren()[0].text
-            _port = element.getchildren()[1].text
-            if _ip:
-                self._proxy.append((_ip, _port))
- 
 
 if __name__ == "__main__":
     rc = RequestsCrawler()

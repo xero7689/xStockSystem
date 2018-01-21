@@ -1,6 +1,7 @@
 import sys
 import pymysql
 import datetime
+from settings import *
 
 class pe_obj(object):
     def __init__(self, year):
@@ -8,7 +9,7 @@ class pe_obj(object):
 
 if __name__ == '__main__':
     stock_no = sys.argv[1]
-    db = pymysql.connect('localhost', 'xero', 'uscrfycn', 'taiwan_stock')
+    db = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock')
     cursor = db.cursor()
     sql = 'select * from {}_bwibbu'.format(stock_no)
     cursor.execute(sql)

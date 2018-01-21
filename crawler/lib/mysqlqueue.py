@@ -8,10 +8,10 @@ from functools import wraps
 
 if (sys.version_info > (3, 0)): 
     import pymysql as mysql
+    from .mylogger import MyLogger
 else:
     import MySQLdb as mysql
-
-from mylogger import MyLogger
+    from mylogger import MyLogger
 
 def commit_handle(exec_type): 
     """ Decorator to handle database commition
@@ -90,6 +90,23 @@ class BaseDBAdapter(object):
         if self.connect:
             self.connect.close()
 
+class ProxyMySQL(BaseDBAdapter):
+    def __init__(self, host, user, password, db='proxy_server', *args, **kwargs):
+        super(ProxyMySQL, self).__init__(host, user, password, db)
+
+    @commit_handle('get')
+    def fetch(self):
+        sql_args = None
+        sql = """
+        SELECT id, INET6_NTOA(ip), port, delay from ssl_proxy
+        WHERE delay < 5
+        AND delay >= 0
+        AND https = 0
+        """
+        #ORDER by delay, last_check;
+        #"""
+        return (sql, sql_args)
+
 class StockMySQL(BaseDBAdapter):
     def __init__(self, host, user, password, db, *args, **kwargs):
         super(StockMySQL, self).__init__(host, user, password, db)
@@ -138,7 +155,3 @@ class StockMySQL(BaseDBAdapter):
         WHERE stock_id = %s;
         """
         return (sql, sql_args)
-    
-
-if __name__ == "__main__":
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn7689', 'taiwan_stock')

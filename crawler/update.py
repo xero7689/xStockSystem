@@ -1,11 +1,13 @@
+import sys, os
 import datetime
 import time
 from daily import crawl_daily
 from lib.mysqlqueue import StockMySQL
+from settings import USER, PASSWORD
 
 def find_update_date(sid):
     date_list = []
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn', 'taiwan_stock')
+    db = StockMySQL('127.0.0.1', USER, PASSWORD, 'taiwan_stock')
     latest_date = db.select_latest_date_by_sid(sid)[0][0]
     today = datetime.datetime.today().date()
     delta_days = (today - latest_date).days
@@ -14,7 +16,7 @@ def find_update_date(sid):
     return date_list
 
 if __name__ == '__main__':
-    sid = 1101
+    sid = int(sys.argv[1])
     date_list = find_update_date(sid)
     for date in date_list:
         # Parse date

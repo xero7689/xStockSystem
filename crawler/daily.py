@@ -1,4 +1,17 @@
 # -*- coding: utf-8 -*-
+"""
+TWSEC Daily Information Crawler
+
+Todo:
+    - http://www.tse.com.tw/exchangeReport/STOCK_DAY?response=json&date={}&stockNo={}
+
+Done:
+    - http://www.tse.com.tw/exchangeReport/STOCK_DAY_AVG?response=json&date={}&stockNo={}
+    - http://www.tse.com.tw/exchangeReport/BWIBBU?response=json&date={}&stockNo={}
+
+Issue:
+    - Daily date larger than 2018
+"""
 
 import sys, os
 import re
@@ -9,10 +22,11 @@ import requests
 import datetime
 import time
 
+from proxyq import ProxyQueue
 from utils import year_generator
 from color_print import color_print
 from settings import USER, PASSWORD
-db = pymysql.connect('localhost', USER, PASSWORD, 'taiwan_stock',
+db = pymysql.connect('127.0.0.1', USER, PASSWORD, 'taiwan_stock',
                      charset='utf8')
 cursor = db.cursor()
 
@@ -36,7 +50,15 @@ _get_sid = """
 SELECT stock_id FROM stock_list
 """
 
+# Global proxy queue
+proxy_queue = ProxyQueue()
+
 def crawl_daily(date, sid):
+    global proxy_queue
+    delay, (pid, ip, port) = proxy_queue.get()
+    proxy = {'http': 'http://{}:{}'.format(ip, port)}
+    print('Use proxy {}'.format(proxy))
+
     color_print('[*] Stock_id {} on {}'.format(sid, date), 'blue')
     daily_data = {}
     if int(date) >= int(datetime.datetime.now().strftime('%Y%m%d')):
@@ -155,7 +177,7 @@ if __name__ == '__main__':
     """
 
     # 化學-1747
-    cate_list = ['金融', '航運']
+    cate_list = ['電子零組件']
 
     for cate in cate_list:
         cursor.execute(_get_by_cate, (cate,))
@@ -174,7 +196,7 @@ if __name__ == '__main__':
                 continue
             for date in year_generator(start_year=2012):
                 crawl_daily(date, sid)
-                time.sleep(10)
+                time.sleep(1)
 
     """
     #crawl_daily(20130430, 2597)

@@ -5,6 +5,7 @@ import json
 import datetime
 import time
 import logging
+from settings import *
 
 def year_generator(start_year=2010, end_year=2017):
     dates = []
@@ -56,7 +57,7 @@ def crawl_day_avg(stock_no, date):
     db.commit()
 
 if __name__ == '__main__':
-    db = pymysql.connect('localhost', 'xero', 'uscrfycn', 'taiwan_stock')
+    db = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock')
     cursor = db.cursor()
     
     create_table_sql = """

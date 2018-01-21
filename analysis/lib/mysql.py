@@ -1,7 +1,8 @@
 import pymysql
 import pandas as pd
+from settings import *
 
-db = pymysql.connect('localhost', 'xero', 'uscrfycn7689', 'taiwan_stock', charset='utf8')
+db = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock', charset='utf8')
 
 def get_all_stock_id():
     sql = """

@@ -151,8 +151,3 @@ class StockMySQL(BaseDBAdapter):
         ORDER BY date;
         """
         return (sql, sql_args)
-
-if __name__ == "__main__":
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn', 'taiwan_stock')
-    #print(db.get_daily(1101))
-    print(db.get_rank_by_date(after='2016-11-01'))

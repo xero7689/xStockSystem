@@ -4,6 +4,7 @@ from flask import render_template
 from flask import jsonify
 
 from lib.mysqlqueue import StockMySQL 
+from lib.settings import *
 
 app = Flask(__name__)
 
@@ -23,7 +24,7 @@ def getPrice():
     }
     sid1 = request.args.get('sid1', '')
     sid2 = request.args.get('sid2', '')
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn', 'taiwan_stock')
+    db = StockMySQL(HOST, USER, PASSWORD, 'taiwan_stock')
     d1 = db.get_daily_price(sid1)
     d2 = db.get_daily_price(sid2)
     for date, price in d1:
@@ -37,7 +38,7 @@ def getPrice():
 
 @app.route('/mysql')
 def mysql():
-    db = StockMySQL('127.0.0.1', 'xero', 'uscrfycn', 'taiwan_stock')
+    db = StockMySQL(HOST, USER, PASSWORD, 'taiwan_stock')
     response = []
     data = db.get_rank_by_date(before='2017-12-01', after='2017-01-01')
 

@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 import pymysql
+from settings import *
 
 
 def sid_scheduler(object):
@@ -31,7 +32,7 @@ def sid_scheduler(object):
     """
 
     def __init__(self):
-        self.db = pymysql.connect('localhost', 'xero', 'uscrfycn', 'taiwan_stock',
+        self.db = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock',
                      charset='utf8')
 
         # Init Job Queue Table
