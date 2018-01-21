@@ -37,6 +37,22 @@ VALUES
 (%s, %s, %s, %s, %s, %s)
 """
 
+insert_max_min = """
+INSERT INTO daily
+(date, stock_id, op, max, min, pd, lot, vol)
+VALUES
+(%s, %s, %s, %s, %s, %s, %s, %s)
+ON DUPLICATE KEY UPDATE
+op=%s, max=%s, min=%s, pd=%s, lot=%s, vol=%s
+"""
+
+update_max_min = """
+UPDATE daily
+SET op=%s, max=%s, min=%s, pd=%s, lot=%s, vol=%s
+WHERE stock_id = %s
+AND date = %s
+"""
+
 price_url = 'http://www.tse.com.tw/exchangeReport/STOCK_DAY_AVG?response=json&date={}&stockNo={}'
 
 bwibbw_url = 'http://www.tse.com.tw/exchangeReport/BWIBBU?response=json&date={}&stockNo={}'
@@ -62,6 +78,7 @@ def crawl_bwibbw():
     pass
 
 def crawl_max_min(sid, date):
+    # Fetch Data
     color_print('  --> Fetch max min data', 'yellow')
     max_retry = 5
     while True:
@@ -77,6 +94,24 @@ def crawl_max_min(sid, date):
                 continue
             else:
                 raise ke
+
+    # Parse Data
+    cursor = db.cursor()
+    for d in data:
+        year, month, day = d[0].split('/')
+        year = 1911 + int(year)
+        _date = "{}-{}-{}".format(year, month, day)
+        _lot    = d[1]
+        _total  = d[2]
+        _op     = d[3]
+        _max    = d[4]
+        _min    = d[5]
+        _price  = d[6]
+        _delta  = d[7]
+        _vol     = d[8]
+        print(update_max_min.format(_op, _max, _min, _delta, _lot, _vol, sid, _date))
+        cursor.execute(update_max_min, (_op, _max, _min, _delta, _lot, _vol, sid, _date))
+    db.commit()
     return data
 
 def crawl_daily(date, sid):
