@@ -155,7 +155,7 @@ if __name__ == '__main__':
     """
 
     # 化學-1747
-    cate_list = ['紡織']
+    cate_list = ['金融', '航運']
 
     for cate in cate_list:
         cursor.execute(_get_by_cate, (cate,))
@@ -166,9 +166,12 @@ if __name__ == '__main__':
             sid = sid[0]
             #if sid == '2002A':
             #    continue
-            #if int(sid) < 1590:
-            #    print(sid)
-            #    continue
+            try:
+                sid = int(sid)
+            except:
+                continue
+            if sid <= 2838:
+                continue
             for date in year_generator(start_year=2012):
                 crawl_daily(date, sid)
                 time.sleep(10)
