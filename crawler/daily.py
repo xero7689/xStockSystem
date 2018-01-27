@@ -26,24 +26,31 @@ from proxyq import ProxyQueue
 from utils import year_generator
 from color_print import color_print
 from settings import USER, PASSWORD
+
+from lib.mylogger import MyLogger
+
+
+# Logger
+logger = MyLogger(name='daily_crawler')
+
 db = pymysql.connect('127.0.0.1', USER, PASSWORD, 'taiwan_stock',
                      charset='utf8')
 cursor = db.cursor()
 
-insert_daily_sql = """
+insert_bwibbw_sql = """
 INSERT IGNORE INTO daily
 (date, stock_id, price, yield, pe, pbr)
 VALUES
 (%s, %s, %s, %s, %s, %s)
 """
 
-insert_max_min = """
+insert_daily_sql = """
 INSERT INTO daily
-(date, stock_id, op, max, min, pd, lot, vol)
+(date, stock_id, price, op, max, min, pd, lot, vol)
 VALUES
 (%s, %s, %s, %s, %s, %s, %s, %s)
 ON DUPLICATE KEY UPDATE
-op=%s, max=%s, min=%s, pd=%s, lot=%s, vol=%s
+price=%s, op=%s, max=%s, min=%s, pd=%s, lot=%s, vol=%s
 """
 
 update_max_min = """
@@ -71,19 +78,11 @@ SELECT stock_id FROM stock_list
 # Global proxy queue
 proxy_queue = ProxyQueue()
 
-def crawl_price():
-    pass
-
-def crawl_bwibbw():
-    pass
-
-def crawl_max_min(sid, date):
-    # Fetch Data
-    color_print('  --> Fetch max min data', 'yellow')
+def _get_twsec_data(twsec_url, headers=None, proxies=None):
     max_retry = 5
     while True:
         try:
-            response = requests.get(max_min_url.format(date, sid), headers=headers)
+            response = requests.get(twsec_url, headers=headers)
             data = json.loads(response.content)['data']
             break
         except KeyError as ke:
@@ -93,47 +92,115 @@ def crawl_max_min(sid, date):
                 time.sleep(10)
                 continue
             else:
-                raise ke
+                logger.DEBUG(ke)
+                return None
+        except Exception as e:
+            print(response.content)
+            raise e
+    return data
 
-    # Parse Data
-    cursor = db.cursor()
-    for d in data:
+def _parse_daily_data(daily_data):
+    data = {}
+    for d in daily_data:
         year, month, day = d[0].split('/')
         year = 1911 + int(year)
         _date = "{}-{}-{}".format(year, month, day)
-        _lot    = d[1]
-        _total  = d[2]
-        _op     = d[3]
-        _max    = d[4]
-        _min    = d[5]
-        _price  = d[6]
-        _delta  = d[7]
-        _vol     = d[8]
-        print(update_max_min.format(_op, _max, _min, _delta, _lot, _vol, sid, _date))
-        cursor.execute(update_max_min, (_op, _max, _min, _delta, _lot, _vol, sid, _date))
-    db.commit()
+        data[_date] = {
+            'lot'    : d[1],
+            'total'  : d[2],
+            'op'     : d[3],
+            'max'    : d[4],
+            'min'    : d[5],
+            'cp'     : d[6],
+            'delta'  : d[7],
+            'vol'    : d[8]
+        }
     return data
 
-def crawl_daily(date, sid):
+def _parse_daily_bwibbw(bwibbw_data):
+    data = {}
+    for d in bwibbw_data:
+        date = d[0]
+        year, month, day = re.findall('\d+[\u0000-\u007F]', date)
+        int_date = int(year+month+day)
+        year = 1911 + int(year)
+        _date = "{}-{}-{}".format(year, month, day)
+        if int_date < 20170401:
+            try:
+                pe = float(d[1])
+            except ValueError:
+                pe = None
+            try:
+                y = float(d[2])
+            except ValueError:
+                y = None
+            try:
+                pbr = float(d[3])
+            except ValueError:
+                pbr = None
+            data[_date] = {'price': 0, 'yield': y, 'pe': pe, 'pbr': pbr}
+        else:
+            try:
+                y = float(d[1])
+            except ValueError:
+                y = None
+
+            try:
+                pe = float(d[3])
+            except ValueError:
+                pe = None
+            
+            try:
+                pbr = float(d[4])
+            except ValueError:
+                pbr = None
+            data[_date] = {'price': 0, 'yield': y, 'pe': pe, 'pbr': pbr}
+    return data
+
+def crawl_daily_bwibbw(sid, date):
+    """
+        Crawl BWIBBW Data 
+    """
+    color_print('  --> Fetch Bwibbu data', 'yellow')
+    data = _get_twsec_data(bwibbw_url.format(date, sid), headers=headers)
+    data = _parse_daily_bwibbw(data)
+    return data
+
+def crawl_daily_data(sid, date):
+    # Fetch Data
+    color_print('  --> Fetch daily data', 'yellow')
+    data = _get_twsec_data(max_min_url.format(date, sid), headers=headers)
+    data = _parse_daily_data(data)
+    return data
+
+def insert_daily_data(sid, data):
+    try:
+        daily_iter = data.iteritems()
+    except AttributeError:
+        daily_iter = data.items()
+    cursor = db.cursor()
+    for date, info in daily_iter:
+        args = (date, sid, info['cp'], info['op'], 
+                           info['max'], info['min'],
+                           info['pd'], info['lot'], info['vol'])
+        color_print('    --> ${} | {} | {} | {}'.format(
+                            info['cp'], info['op'], info['max'], info['min']) ,'green')
+        cursor.execute(insert_daily_sql, args=args)
+
+def crawl_daily_found(date, sid):
+    """
     global proxy_queue
     delay, (pid, ip, port) = proxy_queue.get()
     proxy = {'http': 'http://{}:{}'.format(ip, port)}
     print('Use proxy {}'.format(proxy))
+    """
 
     color_print('[*] Stock_id {} on {}'.format(sid, date), 'blue')
     daily_data = {}
     if int(date) >= int(datetime.datetime.now().strftime('%Y%m%d')):
         return -1
 
-    cursor = db.cursor()
-    color_print('  --> Fetch Bwibbu data', 'yellow')
-    bwibbw_response = requests.get(bwibbw_url.format(date, sid), headers=headers)
-    try:
-        bwibbw_data = json.loads(bwibbw_response.content)['data']
-    except Exception as e:
-        stat = json.loads(bwibbw_response.content)['stat']
-        print(stat)
-        return -1
+
 
     color_print('  --> Fetch Price data', 'yellow')
     max_retry = 5
@@ -151,80 +218,14 @@ def crawl_daily(date, sid):
             else:
                 raise ke
 
-
-    for data in bwibbw_data:
-        _date = data[0]
-        year, month, day = re.findall('\d+[\u0000-\u007F]', _date)
-        year = 1911 + int(year)
-        _date = "{}-{}-{}".format(year, month, day)
-        if int(date) < 20170401:
-            try:
-                pe = float(data[1])
-            except ValueError:
-                pe = None
-            try:
-                y = float(data[2])
-            except ValueError:
-                y = None
-            try:
-                pbr = float(data[3])
-            except ValueError:
-                pbr = None
-            daily_data[(sid, _date)] = {'price': 0, 'yield': y, 'pe': pe, 'pbr': pbr}
-        else:
-            try:
-                y = float(data[1])
-            except ValueError:
-                y = None
-
-            try:
-                pe = float(data[3])
-            except ValueError:
-                pe = None
-            
-            try:
-                pbr = float(data[4])
-            except ValueError:
-                pbr = None
-            daily_data[(sid, _date)] = {'price': 0, 'yield': y, 'pe': pe, 'pbr': pbr}
-
-
-    for data in price_data[:-1]:
-        year, month, day = data[0].split('/')
-        year = 1911 + int(year)
-        _date = "{}-{}-{}".format(year, month, day)
-        try:
-            price = float(data[1])
-        except ValueError as ve:
-            """
-            If data in twse has no price after 2017/04/01
-            it may contains '--' in field
-            """
-            print('No price data founded!')
-            price = None
-        try:
-            daily_data[(sid, _date)]['price'] = price
-        except KeyError as ke:
-            """
-            Sometimes TWSEC may have price data but BWIBBU data
-            """
-            daily_data[(sid, _date)] = {'price': price, 'yield': None, 'pe':
-                                        None, 'pbr': None}
+    
             
 
     try:
         daily_iter = daily_data.iteritems()
     except AttributeError:
         daily_iter = daily_data.items()
-    for k, v in daily_iter:
-        sid, date = k
-        args = (date, sid, v['price'], v['yield'], v['pe'], v['pbr'])
-        color_print('    --> ${} | {} | {} | {}'.format(v['price'],
-                                                       v['pe'],
-                                                       v['yield'],
-                                                       v['pbr']),
-                   'green')
-        cursor.execute(insert_daily_sql, args=args)
+    
 
     db.commit()
     print('[+] {} - {}'.format(date, sid))
@@ -265,4 +266,6 @@ if __name__ == '__main__':
         crawl_daily(date, 1307)
         time.sleep(5)
     """
-    print(crawl_max_min(2597, 20130430))
+    data = crawl_daily_data(2597, 20130430)
+    #print(crawl_daily_bwibbw(2597, 20130430))
+    insert_daily_data(2597, data)
