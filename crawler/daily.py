@@ -15,7 +15,6 @@ Issue:
 
 import sys, os
 import re
-import ipdb
 import json
 import pymysql
 import requests
@@ -39,16 +38,18 @@ cursor = db.cursor()
 
 insert_bwibbw_sql = """
 INSERT IGNORE INTO daily
-(date, stock_id, price, yield, pe, pbr)
+(date, stock_id, yield, pe, pbr)
 VALUES
-(%s, %s, %s, %s, %s, %s)
+(%s, %s, %s, %s, %s)
+ON DUPLICATE KEY UPDATE
+yield=%s, pe=%s, pbr=%s
 """
 
 insert_daily_sql = """
-INSERT INTO daily
+INSERT IGNORE INTO daily
 (date, stock_id, price, op, max, min, pd, lot, vol)
 VALUES
-(%s, %s, %s, %s, %s, %s, %s, %s)
+(%s, %s, %s, %s, %s, %s, %s, %s, %s)
 ON DUPLICATE KEY UPDATE
 price=%s, op=%s, max=%s, min=%s, pd=%s, lot=%s, vol=%s
 """
@@ -180,56 +181,34 @@ def insert_daily_data(sid, data):
         daily_iter = data.items()
     cursor = db.cursor()
     for date, info in daily_iter:
-        args = (date, sid, info['cp'], info['op'], 
-                           info['max'], info['min'],
-                           info['pd'], info['lot'], info['vol'])
+        _price = info['cp']
+        _op = info['op']
+        _max = info['max']
+        _min = info['min']
+        _d = info['delta']
+        _lot = info['lot']
+        _vol = info['vol']
+        args = (date, sid, _price, _op, _max, _min, _d, _lot, _vol, 
+                            _price, _op, _max, _min, _d, _lot, _vol)
         color_print('    --> ${} | {} | {} | {}'.format(
                             info['cp'], info['op'], info['max'], info['min']) ,'green')
         cursor.execute(insert_daily_sql, args=args)
-
-def crawl_daily_found(date, sid):
-    """
-    global proxy_queue
-    delay, (pid, ip, port) = proxy_queue.get()
-    proxy = {'http': 'http://{}:{}'.format(ip, port)}
-    print('Use proxy {}'.format(proxy))
-    """
-
-    color_print('[*] Stock_id {} on {}'.format(sid, date), 'blue')
-    daily_data = {}
-    if int(date) >= int(datetime.datetime.now().strftime('%Y%m%d')):
-        return -1
-
-
-
-    color_print('  --> Fetch Price data', 'yellow')
-    max_retry = 5
-    while True:
-        try:
-            price_response = requests.get(price_url.format(date, sid), headers=headers)
-            price_data = json.loads(price_response.content)['data']
-            break
-        except KeyError as ke:
-            if max_retry > 0:
-                color_print('[!] Key Error, max retry {}.'.format(max_retry),
-                            'red')
-                time.sleep(10)
-                continue
-            else:
-                raise ke
-
-    
-            
-
-    try:
-        daily_iter = daily_data.iteritems()
-    except AttributeError:
-        daily_iter = daily_data.items()
-    
-
     db.commit()
-    print('[+] {} - {}'.format(date, sid))
-    cursor.close()
+
+def insert_bwibbw_data(sid, data):
+    try:
+        _iter = data.iteritems()
+    except AttributeError:
+        _iter = data.items()
+    cursor = db.cursor()
+    for date, info in _iter:
+        _yield = info['yield']
+        _pe = info['pe']
+        _pbr = info['pbr']
+        args = (date, sid, _yield, _pe, _pbr, _yield, _pe, _pbr)
+        color_print('    --> {} | {} | {}'.format(_yield, _pe, _pbr), 'green')
+        cursor.execute(insert_bwibbw_sql, args=args)
+    db.commit()
 
 if __name__ == '__main__':
     # Sid List
@@ -266,6 +245,8 @@ if __name__ == '__main__':
         crawl_daily(date, 1307)
         time.sleep(5)
     """
-    data = crawl_daily_data(2597, 20130430)
-    #print(crawl_daily_bwibbw(2597, 20130430))
+    data = crawl_daily_data(2597, 20161231)
     insert_daily_data(2597, data)
+    
+    bwi_data = crawl_daily_bwibbw(2597, 20161231)
+    insert_bwibbw_data(2597, bwi_data)
