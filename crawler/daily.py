@@ -2,10 +2,9 @@
 """
 TWSEC Daily Information Crawler
 
-Todo:
+Done:
     - http://www.tse.com.tw/exchangeReport/STOCK_DAY?response=json&date={}&stockNo={}
 
-Done:
     - http://www.tse.com.tw/exchangeReport/STOCK_DAY_AVG?response=json&date={}&stockNo={}
     - http://www.tse.com.tw/exchangeReport/BWIBBU?response=json&date={}&stockNo={}
 
@@ -27,6 +26,7 @@ from color_print import color_print
 from settings import USER, PASSWORD
 
 from lib.mylogger import MyLogger
+from proxy_pool import ProxyPool
 
 
 # Logger
@@ -77,13 +77,24 @@ SELECT stock_id FROM stock_list
 """
 
 # Global proxy queue
-proxy_queue = ProxyQueue()
+proxy_pool = ProxyPool()
 
-def _get_twsec_data(twsec_url, headers=None, proxies=None):
+def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
     max_retry = 5
     while True:
         try:
-            response = requests.get(twsec_url, headers=headers)
+            if use_proxy:
+                ip, port, delay, count = proxy_pool.get()
+                proxies = {
+                    'http': 'http://{}:{}'.format(ip, port),
+                    'https': 'http://{}:{}'.format(ip, port)
+                }
+                start = time.time()
+                response = requests.get(twsec_url, headers=headers, proxies=proxies)
+                delay = time.time() - start
+                proxy_pool.release(ip, port, count, delay)
+            else:
+                response = requests.get(twsec_url, headers=headers)
             data = json.loads(response.content)['data']
             break
         except KeyError as ke:
@@ -95,8 +106,10 @@ def _get_twsec_data(twsec_url, headers=None, proxies=None):
             else:
                 logger.DEBUG(ke)
                 return None
+        except json.decoder.JSONDecodeError as jde:
+            print (response.content)
+            raise jde
         except Exception as e:
-            print(response.content)
             raise e
     return data
 
@@ -158,19 +171,19 @@ def _parse_daily_bwibbw(bwibbw_data):
             data[_date] = {'price': 0, 'yield': y, 'pe': pe, 'pbr': pbr}
     return data
 
-def crawl_daily_bwibbw(sid, date):
+def crawl_daily_bwibbw(sid, date, use_proxy=False):
     """
         Crawl BWIBBW Data 
     """
     color_print('  --> Fetch Bwibbu data', 'yellow')
-    data = _get_twsec_data(bwibbw_url.format(date, sid), headers=headers)
+    data = _get_twsec_data(bwibbw_url.format(date, sid), headers=headers, use_proxy=use_proxy)
     data = _parse_daily_bwibbw(data)
     return data
 
-def crawl_daily_data(sid, date):
+def crawl_daily_data(sid, date, use_proxy=False):
     # Fetch Data
     color_print('  --> Fetch daily data', 'yellow')
-    data = _get_twsec_data(max_min_url.format(date, sid), headers=headers)
+    data = _get_twsec_data(max_min_url.format(date, sid), headers=headers, use_proxy=use_proxy)
     data = _parse_daily_data(data)
     return data
 
@@ -210,43 +223,3 @@ def insert_bwibbw_data(sid, data):
         cursor.execute(insert_bwibbw_sql, args=args)
     db.commit()
 
-if __name__ == '__main__':
-    # Sid List
-    cursor = db.cursor()
-    _get_by_cate = """
-    select stock_id from stock_list where stock_cate = %s
-    """
-
-    # 化學-1747
-    cate_list = ['電子零組件']
-    """
-    for cate in cate_list:
-        cursor.execute(_get_by_cate, (cate,))
-        sid_lists = cursor.fetchall()
-        db.commit()
-        # Full Update
-        for sid in sid_lists:
-            sid = sid[0]
-            #if sid == '2002A':
-            #    continue
-            try:
-                sid = int(sid)
-            except:
-                continue
-            if sid <= 2838:
-                continue
-            for date in year_generator(start_year=2012):
-                crawl_daily(date, sid)
-                time.sleep(1)
-    """
-    """
-    #crawl_daily(20130430, 2597)
-    for date in year_generator(start_year=2011):
-        crawl_daily(date, 1307)
-        time.sleep(5)
-    """
-    data = crawl_daily_data(2597, 20161231)
-    insert_daily_data(2597, data)
-    
-    bwi_data = crawl_daily_bwibbw(2597, 20161231)
-    insert_bwibbw_data(2597, bwi_data)
