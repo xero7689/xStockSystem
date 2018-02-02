@@ -8,6 +8,10 @@ _select_proxy = """
 select INET6_NTOA(ip), port, delay from ssl_proxy where delay < 5 and delay > 0;
 """
 
+_select_proxy = """
+select INET6_NTOA(ip), port, delay from ssl_proxy where delay > 0 and delay < 5 and last_check > '2018-02-01';
+"""
+
 class ProxyPool(object):
     def __init__(self):
         self.proxy_hq = []
@@ -28,7 +32,7 @@ class ProxyPool(object):
     def get(self):
         delay, count, ip, port = self.pop_proxy()
         self.exec_proxy[(ip, port, count)] = delay
-        return proxy
+        return (ip, port, delay, count)
 
     def release(self, ip, port, count, new_delay):
         self.exec_proxy.pop((ip, port, count))
@@ -46,5 +50,5 @@ class ProxyPool(object):
 
 if __name__ == '__main__':
     pp = ProxyPool()
-    print(pp.pop_proxy())
-    print(pp.proxy_hq)
+    print(pp.get())
+
