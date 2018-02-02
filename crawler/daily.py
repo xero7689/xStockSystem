@@ -81,6 +81,7 @@ proxy_pool = ProxyPool()
 
 def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
     max_retry = 5
+    data = None
     while True:
         try:
             if use_proxy:
@@ -95,7 +96,11 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
                 proxy_pool.release(ip, port, count, delay)
             else:
                 response = requests.get(twsec_url, headers=headers)
-            data = json.loads(response.content)['data']
+            if type(response.content) is bytes:
+                content = response.content.decode('utf8')
+            else:
+                content = response.content
+            data = json.loads(content)['data']
             break
         except KeyError as ke:
             if max_retry > 0:
@@ -108,9 +113,11 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
                 return None
         except json.decoder.JSONDecodeError as jde:
             print (response.content)
-            raise jde
+            print (jde)
+            return data
         except Exception as e:
-            raise e
+            print('Error change proxy')
+            continue
     return data
 
 def _parse_daily_data(daily_data):
@@ -177,14 +184,20 @@ def crawl_daily_bwibbw(sid, date, use_proxy=False):
     """
     color_print('  --> Fetch Bwibbu data', 'yellow')
     data = _get_twsec_data(bwibbw_url.format(date, sid), headers=headers, use_proxy=use_proxy)
-    data = _parse_daily_bwibbw(data)
+    if not data:
+        data = None
+    else:
+        data = _parse_daily_bwibbw(data)
     return data
 
 def crawl_daily_data(sid, date, use_proxy=False):
     # Fetch Data
     color_print('  --> Fetch daily data', 'yellow')
     data = _get_twsec_data(max_min_url.format(date, sid), headers=headers, use_proxy=use_proxy)
-    data = _parse_daily_data(data)
+    if not data:
+        data = None
+    else:
+        data = _parse_daily_data(data)
     return data
 
 def insert_daily_data(sid, data):
