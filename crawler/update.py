@@ -1,7 +1,7 @@
 import sys, os
 import datetime
 import time
-from daily import crawl_daily
+from daily import *
 from lib.mysqlqueue import StockMySQL
 from settings import USER, PASSWORD
 
@@ -18,10 +18,15 @@ def find_update_date(sid):
 if __name__ == '__main__':
     sid = int(sys.argv[1])
     date_list = find_update_date(sid)
+    cur_month = None
     for date in date_list:
         # Parse date
         year = date.year
         month = date.month
+        if month == cur_month:
+            continue
+        else:
+            cur_month = month
         day = date.day
         if month < 10:
             month = "0{}".format(month)
@@ -30,5 +35,9 @@ if __name__ == '__main__':
         _date = "{}{}{}".format(year, month, day)
 
         # Crawl
-        crawl_daily(_date, sid)
+        #crawl_daily(_date, sid)
+        dd = crawl_daily_data(sid, date, False)
+        bd = crawl_daily_bwibbw(sid, date, False)
+        insert_daily_data(sid, dd)
+        insert_bwibbw_data(sid, bd)
         time.sleep(10) 
