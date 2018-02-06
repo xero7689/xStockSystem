@@ -143,9 +143,10 @@ def _parse_daily_bwibbw(bwibbw_data):
     for d in bwibbw_data:
         date = d[0]
         year, month, day = re.findall('\d+[\u0000-\u007F]', date)
-        int_date = int(year+month+day)
         year = 1911 + int(year)
+        int_date = int(str(year)+month+day)
         _date = "{}-{}-{}".format(year, month, day)
+
         if int_date < 20170401:
             try:
                 pe = float(d[1])
