@@ -1,5 +1,7 @@
 import sys, os
+from pprint import pprint
 import pymysql
+import random
 
 from utils import year_generator
 from daily import *
@@ -25,18 +27,14 @@ def get_cate_stock(cate_name):
     return sidlist
 
 if __name__ == '__main__':
-    stock_list = get_cate_stock('電子零組件')
-    print(stock_list)
-    for sid in stock_list:
-        try:
-            sid = int(sid)
-        except:
-            continue
-        for date in year_generator(start_year=2012):
-            dd = crawl_daily_data(sid, date, False)
-            if dd:
-                insert_daily_data(sid, dd)
-            bd = crawl_daily_bwibbw(sid, date, False)
-            if bd:
-                insert_bwibbw_data(sid, bd)
-            time.sleep(10)
+    sid = int(sys.argv[1])
+    use_proxy = int(sys.argv[2])
+    for date in year_generator(start_year=2012):
+        print(date)
+        dd = crawl_daily_data(sid, date, use_proxy)
+        if dd:
+            insert_daily_data(sid, dd)
+        bd = crawl_daily_bwibbw(sid, date, use_proxy)
+        if bd:
+            insert_bwibbw_data(sid, bd)
+        time.sleep(random.randint(5, 15))
