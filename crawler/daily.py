@@ -91,15 +91,17 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
                     'https': 'http://{}:{}'.format(ip, port)
                 }
                 start = time.time()
-                response = requests.get(twsec_url, headers=headers, proxies=proxies)
+                response = requests.get(twsec_url, headers=headers, proxies=proxies, timeout=5)
                 delay = time.time() - start
                 proxy_pool.release(ip, port, count, delay)
             else:
                 response = requests.get(twsec_url, headers=headers)
+
             if type(response.content) is bytes:
                 content = response.content.decode('utf8')
             else:
                 content = response.content
+            
             data = json.loads(content)['data']
             break
         except KeyError as ke:
@@ -115,7 +117,17 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
             print (response.content)
             print (jde)
             return data
+        except requests.exceptions.Timeout:
+            delay = time.time() - start
+            proxy_pool.release(ip, port, count, delay)
+            continue
         except Exception as e:
+            if e.args[0].args[1].args[0] == 104:
+                print(e.args[0].args[1].args[1])
+                continue
+            import ipdb
+            ipdb.set_trace()
+            print(str(e))
             print('Error change proxy')
             continue
     return data
@@ -217,8 +229,8 @@ def insert_daily_data(sid, data):
         _vol = info['vol']
         args = (date, sid, _price, _op, _max, _min, _d, _lot, _vol, 
                             _price, _op, _max, _min, _d, _lot, _vol)
-        color_print('    --> ${} | {} | {} | {}'.format(
-                            info['cp'], info['op'], info['max'], info['min']) ,'green')
+        #color_print('    --> ${} | {} | {} | {}'.format(
+        #                    info['cp'], info['op'], info['max'], info['min']) ,'green')
         cursor.execute(insert_daily_sql, args=args)
     db.commit()
 
@@ -233,7 +245,7 @@ def insert_bwibbw_data(sid, data):
         _pe = info['pe']
         _pbr = info['pbr']
         args = (date, sid, _yield, _pe, _pbr, _yield, _pe, _pbr)
-        color_print('    --> {} | {} | {}'.format(_yield, _pe, _pbr), 'green')
+        #color_print('    --> {} | {} | {}'.format(_yield, _pe, _pbr), 'green')
         cursor.execute(insert_bwibbw_sql, args=args)
     db.commit()
 
