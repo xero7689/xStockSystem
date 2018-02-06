@@ -18,11 +18,11 @@ def MyLogger(name='__name__', prefix=None, log_dir_path=DEFAULT_LOG_DIR, debug_l
     _LOGGING_LEVEL = debug_level
     logger = logging.getLogger(name)
 
-    log_fn = time.strftime("%Y_%m") + ".log"
+    log_suffix = ".log"
     if prefix:
-        log_fn = prefix + "_" + log_fn
+        log_fn = prefix + log_suffix
     else:
-        log_fn = name + "_" + log_fn
+        log_fn = name + log_suffix
 
     if log_dir_path:
         if not os.path.isdir(log_dir_path):

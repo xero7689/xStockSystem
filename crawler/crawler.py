@@ -33,8 +33,10 @@ if __name__ == '__main__':
         except:
             continue
         for date in year_generator(start_year=2012):
-            print(crawl_daily_data(sid, date, True))
-            print(crawl_daily_bwibbw(sid, date, True))
-            break
-        break
-
+            dd = crawl_daily_data(sid, date, False)
+            if dd:
+                insert_daily_data(sid, dd)
+            bd = crawl_daily_bwibbw(sid, date, False)
+            if bd:
+                insert_bwibbw_data(sid, bd)
+            time.sleep(10)

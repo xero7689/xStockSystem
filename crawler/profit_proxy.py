@@ -81,6 +81,14 @@ async def profit(session, pid, ip, port, https, country):
                        WHERE id = %s;
                        """, (pid,))
         prefix = color_print.make_string('[-]', 'red')
+    except aiohttp.client_exceptions.ClientResponseError as cre:
+        cursor.execute("""
+                       UPDATE ssl_proxy
+                       SET delay = -5,
+                       last_check = now()
+                       WHERE id = %s;
+                       """, (pid,))
+        prefix = color_print.make_string('[-]', 'red')
     delay = time.time() - now
     if delay < 1:
         delay = color_print.make_string('{}'.format(delay), 'green')
