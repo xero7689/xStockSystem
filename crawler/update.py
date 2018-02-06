@@ -1,6 +1,7 @@
 import sys, os
 import datetime
 import time
+import random
 from daily import *
 from lib.mysqlqueue import StockMySQL
 from settings import USER, PASSWORD
@@ -40,4 +41,4 @@ if __name__ == '__main__':
         bd = crawl_daily_bwibbw(sid, date, False)
         insert_daily_data(sid, dd)
         insert_bwibbw_data(sid, bd)
-        time.sleep(10) 
+        time.sleep(random.randint(5, 15))
