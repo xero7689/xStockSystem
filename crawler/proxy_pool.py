@@ -32,11 +32,13 @@ class ProxyPool(object):
     def get(self):
         delay, count, ip, port = self.pop_proxy()
         self.exec_proxy[(ip, port, count)] = delay
+        print('--> get proxy {}'.format(ip))
         return (ip, port, delay, count)
 
     def release(self, ip, port, count, new_delay):
         self.exec_proxy.pop((ip, port, count))
         self.add_proxy(ip, port, new_delay)
+        print('--> release proxy {} {}'.format(ip, new_delay))
 
     def add_proxy(self, ip, port, delay):
         count = next(self.counter)
