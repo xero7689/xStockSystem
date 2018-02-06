@@ -33,8 +33,8 @@ if __name__ == '__main__':
         except:
             continue
         for date in year_generator(start_year=2012):
-            print(crawl_daily_data(sid, date, False))
-            print(crawl_daily_bwibbw(sid, date, False))
+            print(crawl_daily_data(sid, date, True))
+            print(crawl_daily_bwibbw(sid, date, True))
             break
         break
 
