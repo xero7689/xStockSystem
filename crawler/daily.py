@@ -138,6 +138,9 @@ def _parse_daily_data(daily_data):
         year, month, day = d[0].split('/')
         year = 1911 + int(year)
         _date = "{}-{}-{}".format(year, month, day)
+        if year > 2020:
+            import ipdb
+            ipdb.set_trace()
         data[_date] = {
             'lot'    : d[1],
             'total'  : d[2],
@@ -158,6 +161,9 @@ def _parse_daily_bwibbw(bwibbw_data):
         year = 1911 + int(year)
         int_date = int(str(year)+month+day)
         _date = "{}-{}-{}".format(year, month, day)
+        if year > 2020:
+            import ipdb
+            ipdb.set_trace()
 
         if int_date < 20170401:
             try:
@@ -188,6 +194,9 @@ def _parse_daily_bwibbw(bwibbw_data):
                 pbr = float(d[4])
             except ValueError:
                 pbr = None
+            except IndexError:
+                import ipdb
+                ipdb.set_trace()
             data[_date] = {'price': 0, 'yield': y, 'pe': pe, 'pbr': pbr}
     return data
 
