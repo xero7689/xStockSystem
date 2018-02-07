@@ -33,6 +33,14 @@ for proxy in proxies:
     queue.put_nowait(proxy)
 
 twsec_url = 'http://www.twse.com.tw/zh/'
+
+_update_ssl_proxy = """
+    UPDATE ssl_proxy
+    SET delay = %s,
+    last_check = now()
+    WHERE id = %s;
+"""
+
 async def profit(session, pid, ip, port, https, country):
     global con
     cursor = con.cursor()
@@ -41,64 +49,36 @@ async def profit(session, pid, ip, port, https, country):
     try:
         with async_timeout.timeout(5):
             async with session.get(twsec_url, proxy=proxy) as response:
-                delay = time.time() - now
-                cursor.execute("""
-                               UPDATE ssl_proxy
-                               SET delay = %s,
-                               last_check = now()
-                               WHERE id = %s;
-                              """, (delay, pid))
-                prefix = color_print.make_string('[+]', 'green')
+                print(response.status)
+                if response.status == 200:
+                    delay = time.time() - now
+                    cursor.execute(_update_ssl_proxy, (delay, pid))
+                    prefix = color_print.make_string('[+]', 'green')
+                else:
+                    delay = response.status
+                    cursor.execute(_update_ssl_proxy, (delay, pid))
+                    prefix = color_print.make_string('[-][{}]'.format(response.status), 'red')
     except asyncio.TimeoutError as te:
-        cursor.execute("""
-                       UPDATE ssl_proxy
-                       SET delay = 9999,
-                       last_check = now()
-                       WHERE id = %s;
-                      """, (pid,))
-        prefix = color_print.make_string('[-]', 'red')
+        cursor.execute(_update_ssl_proxy, (9999, pid))
+        prefix = color_print.make_string('[-][timeout]', 'red')
     except aiohttp.client_exceptions.ServerDisconnectedError as ce:
-        cursor.execute("""
-                       UPDATE ssl_proxy
-                       SET delay = -1,
-                       last_check = now()
-                       WHERE id = %s;
-                       """, (pid,))
-        prefix = color_print.make_string('[-]', 'red')
+        cursor.execute(_update_ssl_proxy, (-1, pid))
+        prefix = color_print.make_string('[-][server disconnect]', 'red')
     except aiohttp.client_exceptions.ClientProxyConnectionError as pce:
-        cursor.execute("""
-                       UPDATE ssl_proxy
-                       SET delay = -2,
-                       last_check = now()
-                       WHERE id = %s;
-                       """, (pid,))
-        prefix = color_print.make_string('[-]', 'red')
+        cursor.execute(_update_ssl_proxy, (-2, pid))
+        prefix = color_print.make_string('[-][client proxy connect]', 'red')
     except aiohttp.client_exceptions.ClientOSError as cose:
         # Connection reset by peers
-        cursor.execute("""
-                       UPDATE ssl_proxy
-                       SET delay = -3,
-                       last_check = now()
-                       WHERE id = %s;
-                       """, (pid,))
-        prefix = color_print.make_string('[-]', 'red')
+        cursor.execute(_update_ssl_proxy, (-3, pid))
+        prefix = color_print.make_string('[-][client os error]', 'red')
     except aiohttp.client_exceptions.ClientHttpProxyError as chpe:
-        cursor.execute("""
-                       UPDATE ssl_proxy
-                       SET delay = -4,
-                       last_check = now()
-                       WHERE id = %s;
-                       """, (pid,))
-        prefix = color_print.make_string('[-]', 'red')
+        cursor.execute(_update_ssl_proxy, (-4, pid))
+        prefix = color_print.make_string('[-][client http proxy error]', 'red')
     except aiohttp.client_exceptions.ClientResponseError as cre:
-        cursor.execute("""
-                       UPDATE ssl_proxy
-                       SET delay = -5,
-                       last_check = now()
-                       WHERE id = %s;
-                       """, (pid,))
-        prefix = color_print.make_string('[-]', 'red')
+        cursor.execute(_update_ssl_proxy, (-5, pid))
+        prefix = color_print.make_string('[-][client response error]', 'red')
     delay = time.time() - now
+
     if delay < 1:
         delay = color_print.make_string('{}'.format(delay), 'green')
     elif 5 > delay >= 1:
