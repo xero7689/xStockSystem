@@ -19,6 +19,7 @@ import pymysql
 import requests
 import datetime
 import time
+import collections
 
 from proxyq import ProxyQueue
 from utils import year_generator
@@ -166,11 +167,30 @@ def _parse_daily_data(daily_data):
         }
     return data
 
-def _parse_daily_bwibbw(bwibbw_data):
-    data = {}
+def consist_bwibbw_date(bwibbw_data):
+    year_list = []
+    month_list = []
     for d in bwibbw_data:
         date = d[0]
         year, month, day = re.findall('\d+[\u0000-\u007F]', date)
+        year_list.append(year)
+        month_list.append(month)
+    yc = collections.Counter(year_list)
+    mc = collections.Counter(month_list)
+    real_year = max(collections.Counter(yc).items(), key=lambda x:x[1])[0]
+    real_month = max(collections.Counter(mc).items(), key=lambda x:x[1])[0]
+    return (real_year, real_month)
+
+def _parse_daily_bwibbw(bwibbw_data):
+    data = {}
+    ry, rm = consist_bwibbw_date(bwibbw_data)
+    for d in bwibbw_data:
+        date = d[0]
+        year, month, day = re.findall('\d+[\u0000-\u007F]', date)
+        if year != ry:
+            year = ry
+        if month != rm:
+            month = rm
         year = 1911 + int(year)
         int_date = int(str(year)+month+day)
         _date = "{}-{}-{}".format(year, month, day)
