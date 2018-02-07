@@ -7,15 +7,24 @@ import hashlib
 from lib import color_print
 from settings import *
 
-# Get proxy list from mysql
-con = pymysql.connect(HOST, USER, PASSWORD, 'proxy_server')
-cursor = con.cursor()
-cursor.execute('''
+get_null_delay_proxy = '''
     SELECT id, INET6_NTOA(ip), port, country, https
     FROM ssl_proxy
     WHERE https = 0
     AND delay IS NULL
-    ''')
+'''
+
+get_low_delay_proxy = '''
+    SELECT id, INET6_NTOA(ip), port, country, https
+    FROM ssl_proxy
+    WHERE https = 0
+    AND delay > 0 and delay < 1
+'''
+
+# Get proxy list from mysql
+con = pymysql.connect(HOST, USER, PASSWORD, 'proxy_server')
+cursor = con.cursor()
+cursor.execute(get_low_delay_proxy)
 proxies = list(cursor.fetchall())
 cursor.close()
 con.commit()
