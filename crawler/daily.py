@@ -92,6 +92,7 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
                 }
                 start = time.time()
                 response = requests.get(twsec_url, headers=headers, proxies=proxies, timeout=5)
+                color_print(response.status_code, 'red')
                 delay = time.time() - start
                 proxy_pool.release(ip, port, count, delay)
             else:
