@@ -29,7 +29,8 @@ def get_cate_stock(cate_name):
 if __name__ == '__main__':
     sid = int(sys.argv[1])
     use_proxy = int(sys.argv[2])
-    for date in year_generator(start_year=2012):
+    start = int(sys.argv[3])
+    for date in year_generator(start_year=start):
         print(date)
         dd = crawl_daily_data(sid, date, use_proxy)
         if dd:
