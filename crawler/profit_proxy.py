@@ -25,11 +25,15 @@ get_low_delay_proxy = '''
 con = pymysql.connect(HOST, USER, PASSWORD, 'proxy_server')
 cursor = con.cursor()
 cursor.execute(get_low_delay_proxy)
-proxies = list(cursor.fetchall())
+low_delay_proxies = list(cursor.fetchall())
+cursor.execute(get_null_delay_proxy)
+null_delay_proxies = list(cursor.fetchall())
 cursor.close()
 con.commit()
 queue = asyncio.Queue()
-for proxy in proxies:
+for proxy in low_delay_proxies:
+    queue.put_nowait(proxy)
+for proxy in null_delay_proxies:
     queue.put_nowait(proxy)
 
 twsec_url = 'http://www.twse.com.tw/zh/'
