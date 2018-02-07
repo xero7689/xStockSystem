@@ -12,6 +12,10 @@ _select_proxy = """
 select INET6_NTOA(ip), port, delay from ssl_proxy where delay > 0 and delay < 5 and last_check > '2018-02-01';
 """
 
+_select_latest_low_delay_proxy = """
+select INET6_NTOA(ip), port, delay from ssl_proxy where delay > 0 and delay < 5 and last_check >CURDATE();
+"""
+
 class ProxyPool(object):
     def __init__(self):
         self.proxy_hq = []
@@ -22,7 +26,7 @@ class ProxyPool(object):
     def init_hq(self):
         con = pymysql.connect(HOST, USER, PASSWORD, 'proxy_server')
         cursor = con.cursor()
-        cursor.execute(_select_proxy)
+        cursor.execute(_select_latest_low_delay_proxy)
         proxies = cursor.fetchall()
         for ip, port, delay in proxies:
             self.add_proxy(ip, port, delay)
