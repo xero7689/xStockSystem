@@ -71,6 +71,7 @@ headers = { 'User-Agent': 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebK
         'Referer': 'http://www.tse.com.tw/zh/page/trading/exchange/BWIBBU.html'
         }
 
+no_match_data_byte_string = b'\xe5\xbe\x88\xe6\x8a\xb1\xe6\xad\x89\xef\xbc\x8c\xe6\xb2\x92\xe6\x9c\x89\xe7\xac\xa6\xe5\x90\x88\xe6\xa2\x9d\xe4\xbb\xb6\xe7\x9a\x84\xe8\xb3\x87\xe6\x96\x99!'.decode('utf8')
 # Get Stock_id
 _get_sid = """
 SELECT stock_id FROM stock_list
@@ -103,13 +104,24 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
             else:
                 content = response.content
             
-            data = json.loads(content)['data']
-            break
+            json_obj = json.loads(content)
+            # No condition match data, directly jump out!
+            if json_obj['stat'] == no_match_data_byte_string:
+                color_print(json_obj['stat'], 'red')
+                data = None
+                break
+            else:
+                data = json_obj['data']
+                break
         except KeyError as ke:
+            import ipdb
+            ipdb.set_trace()
             if max_retry > 0:
                 color_print('[!] Key Error, max retry {}.'.format(max_retry),
                             'red')
+                color_print(response.content, 'yellow')
                 time.sleep(10)
+                max_retry -= 1
                 continue
             else:
                 logger.DEBUG(ke)
