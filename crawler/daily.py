@@ -133,9 +133,10 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
             print (response.content)
             print (jde)
             return data
-        except requests.exceptions.Timeout:
-            delay = time.time() - start
-            proxy_pool.release(ip, port, count, delay)
+        except requests.exceptions.Timeout as te:
+            print('[-] Proxy timeout')
+            #delay = time.time() - start
+            #proxy_pool.release(ip, port, count, delay)
             continue
         except Exception as e:
             try:
