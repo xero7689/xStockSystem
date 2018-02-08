@@ -88,6 +88,10 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
         try:
             if use_proxy:
                 ip, port, delay, count = proxy_pool.get()
+                if not ip:
+                    print('no proxy can use')
+                    use_proxy = None
+                    continue
                 proxies = {
                     'http': 'http://{}:{}'.format(ip, port),
                     'https': 'http://{}:{}'.format(ip, port)
@@ -115,8 +119,6 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
                 data = json_obj['data']
                 break
         except KeyError as ke:
-            import ipdb
-            ipdb.set_trace()
             if max_retry > 0:
                 color_print('[!] Key Error, max retry {}.'.format(max_retry),
                             'red')
@@ -136,14 +138,13 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
             proxy_pool.release(ip, port, count, delay)
             continue
         except Exception as e:
-            if e.args[0].args[1].args[0] == 104:
-                print(e.args[0].args[1].args[1])
+            try:
+                if e.args[0].args[1].args[0] == 104:
+                    print(e.args[0].args[1].args[1])
+                    continue
+            except IndexError:
+                logger.error(e)
                 continue
-            import ipdb
-            ipdb.set_trace()
-            print(str(e))
-            print('Error change proxy')
-            continue
     return data
 
 def _parse_daily_data(daily_data):
