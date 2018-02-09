@@ -14,6 +14,5 @@ var getData = (function () {
     return {
         get_rank_list: get_rank_list
     }
-
 })();
 
