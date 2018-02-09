@@ -5,6 +5,7 @@ import random
 from daily import *
 from lib.mysqlqueue import StockMySQL
 from settings import USER, PASSWORD
+from utils import until_today_generator
 
 def find_update_date(sid):
     date_list = []
@@ -20,7 +21,8 @@ if __name__ == '__main__':
     sid = int(sys.argv[1])
     date_list = find_update_date(sid)
     cur_month = None
-    for date in date_list:
+    for date in until_today_generator(2017):
+        """
         # Parse date
         year = date.year
         month = date.month
@@ -34,6 +36,7 @@ if __name__ == '__main__':
         if day < 10:
             day = "0{}".format(day)
         _date = "{}{}{}".format(year, month, day)
+        """
 
         # Crawl
         #crawl_daily(_date, sid)
