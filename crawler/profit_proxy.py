@@ -30,11 +30,14 @@ cursor.execute(get_null_delay_proxy)
 null_delay_proxies = list(cursor.fetchall())
 cursor.close()
 con.commit()
-queue = asyncio.Queue()
+#queue = asyncio.Queue()
+queue = []
 for proxy in low_delay_proxies:
-    queue.put_nowait(proxy)
+    #queue.put_nowait(proxy)
+    queue.append(proxy)
 for proxy in null_delay_proxies:
-    queue.put_nowait(proxy)
+    #queue.put_nowait(proxy)
+    queue.append(proxy)
 
 twsec_url = 'http://www.twse.com.tw/zh/'
 
@@ -93,17 +96,19 @@ async def profit(session, pid, ip, port, https, country):
     con.commit()
     print('{} {}:{}\t{}\t{}'.format(prefix, ip, port, country, delay))
 
-async def main():
-    global queue
-    while not queue.empty():
-        pid, ip, port, country, https = await queue.get()
-        if https is 1:
-            https = 'https'
-        else:
-            https = 'http'
-        async with aiohttp.ClientSession() as session:
-            print('[*] Create session: {}://{}:{}({})'.format(https, ip, port, country))
-            await profit(session, pid, ip, port, https, country)
+async def main(proxy_info):
+    pid, ip, port, https, country = proxy_info
+    async with aiohttp.ClientSession() as session:
+        print('[*] Create session: {}://{}:{}({})'.format(https, ip, port, country))
+        await profit(session, pid, ip, port, https, country)
 
+tasks = []
+for proxy_info in queue:
+    pid, ip, port, country, https = proxy_info
+    if https is 1:
+        https = 'https'
+    else:
+        https = 'http'
+    tasks.append(asyncio.ensure_future(main((pid, ip, port, https, country))))
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+loop.run_until_complete(asyncio.wait(tasks))
