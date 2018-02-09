@@ -112,3 +112,4 @@ for proxy_info in queue:
     tasks.append(asyncio.ensure_future(main((pid, ip, port, https, country))))
 loop = asyncio.get_event_loop()
 loop.run_until_complete(asyncio.wait(tasks))
+con.close()
