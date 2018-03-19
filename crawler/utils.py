@@ -2,7 +2,7 @@ import sys
 import os
 import datetime
 
-def year_generator(start_year=2010, end_year=2017):
+def year_generator(start_year=2010, end_year=2018):
     dates = []
     for y in range(start_year, end_year+1):
         year = str(y)
