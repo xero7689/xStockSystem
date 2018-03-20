@@ -1,6 +1,6 @@
 import pymysql
 import pandas as pd
-from settings import *
+from .settings import *
 
 db = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock', charset='utf8')
 
@@ -14,6 +14,13 @@ def get_all_stock_id():
 def get_stock_info(sid):
     sql = """
         select date, price, yield from daily where stock_id = {};
+    """.format(sid)
+    df = pd.read_sql(sql, con=db)
+    return df
+
+def get_all_stock_info(sid):
+    sql = """
+        select * from daily where stock_id = {};
     """.format(sid)
     df = pd.read_sql(sql, con=db)
     return df
