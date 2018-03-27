@@ -34,6 +34,7 @@ def getPrice():
         tmp = {'date': date, 'price': price}
         response['d2'].append(tmp)
     print(jsonify(response))
+    db.close_connect()
     return jsonify(response)
 
 @app.route('/mysql')
@@ -48,6 +49,7 @@ def mysql():
                          'my':my, 
                          'date':dd, 
                          'cate':cate})
+    db.close_connect()
     return jsonify(response)
 
 @app.route('/sample')

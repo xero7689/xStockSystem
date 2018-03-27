@@ -155,3 +155,11 @@ class StockMySQL(BaseDBAdapter):
         WHERE stock_id = %s;
         """
         return (sql, sql_args)
+
+    @commit_handle('get')
+    def select_distinct_sid_from_daily(self):
+        sql_args = None
+        sql = """
+        SELECT DISTINCT stock_id from daily;
+        """
+        return (sql, sql_args)
