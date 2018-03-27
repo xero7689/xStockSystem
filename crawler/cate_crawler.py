@@ -1,6 +1,7 @@
 import sys, os
 from pprint import pprint
 import pymysql
+import random
 
 from utils import year_generator
 from daily import *
@@ -42,4 +43,4 @@ if __name__ == '__main__':
             bd = crawl_daily_bwibbw(sid, date, use_proxy)
             if bd:
                 insert_bwibbw_data(sid, bd)
-            time.sleep(1)
+            time.sleep(random.randint(5, 15))
