@@ -1,8 +1,10 @@
-import os, sys
+import os
+import sys
 import pandas as pd
 import datetime
 from analyze_stock import *
 from lib.mysql import get_stock_info
+
 
 def count_bentou(stock_id, start_date, end_date, delta=7, pr=0.02):
     df = get_stock_info(stock_id)
@@ -10,11 +12,11 @@ def count_bentou(stock_id, start_date, end_date, delta=7, pr=0.02):
         df['date'] = pd.to_datetime(df['date'])
         #df = df.sort('date')
     except Exception as e:
-        #print(e)
+        # print(e)
         for row in df['date'].iteritems():
-            try: 
-                pd.to_datetime(row[1]) 
-            except: 
+            try:
+                pd.to_datetime(row[1])
+            except:
                 print(row[1])
         raise e
         return 0
@@ -41,11 +43,9 @@ def count_bentou(stock_id, start_date, end_date, delta=7, pr=0.02):
             # Find Max and Min Price
             tmp_max_p = max(tmp_mask_price)
             tmp_min_p = min(tmp_mask_price)
-            if (tmp_max_p / mean_price)-1 > pr:
+            if (tmp_max_p / mean_price) - 1 > pr:
                 count += 1
             if 1-(tmp_min_p / mean_price) > pr:
                 count += 1
             tmp_start = tmp_fin
     return count
-
-
