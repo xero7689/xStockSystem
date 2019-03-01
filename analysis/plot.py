@@ -48,12 +48,12 @@ axv.set_ylim(0, max(3*ddfreshape['lot'].values))
 axv.axes.yaxis.set_ticklabels([])
 #ax1v.grid(False)
 
-# AX-Yield
+# AX-PE
 axpe = plt.subplot2grid((7,4), (0,0), sharex=ax, rowspan=1, colspan=4, axisbg='#07000d')
 axpe.plot(ddf['date'], ddf['yield'], color='#9932CC')
-mean_pe = ddf['yield'].mean()
+mean_pe = ddf['pe'].mean()
 axpe.axhline(y=mean_pe, linewidth='0.6', color='#D8BFD8', ls='--')
-axpe.legend(['殖利率'], prop=font)
+axpe.legend(['PE'], prop=font)
 axpe.set_ylabel('PE')
 
 # AX-BIAS
