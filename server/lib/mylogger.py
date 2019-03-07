@@ -4,8 +4,8 @@ from logging.handlers import SMTPHandler
 from logging.handlers import RotatingFileHandler
 import time
 
-#PROJECT_DIR = os.path.abspath(os.path.join(os.path.pardir, '..'))
-PROJECT_DIR = '/home/xero/Code/python/stock/server'
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.pardir, '..'))
+#PROJECT_DIR = '/home/xero/Code/python/stock/server'
 DEFAULT_LOG_DIR = os.path.join(PROJECT_DIR, 'log/')
 
 loggers = {}

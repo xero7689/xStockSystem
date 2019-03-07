@@ -130,6 +130,7 @@ def _get_twsec_data(twsec_url, headers=None, use_proxy=False):
                 logger.DEBUG(ke)
                 return None
         except json.decoder.JSONDecodeError as jde:
+            print(response.url)
             print (response.content)
             print (jde)
             return data

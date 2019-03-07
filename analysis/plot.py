@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import sys, os
 import numpy as np
 import pandas as pd
@@ -8,11 +10,12 @@ from matplotlib.font_manager import FontProperties
 from matplotlib import rcParams
 import pandas as pd
 from lib.mysql import get_all_stock_info, get_zh_name
+from settings import chinese_font_path
 
 
 #fig, ax = plt.subplots(figsize=(15, 7))
 ax = plt.subplot2grid((7,4), (1,0), rowspan=4, colspan=4, axisbg='#07000d')
-font = FontProperties(fname='/usr/share/fonts/wenquanyi/wqy-zenhei/wqy-zenhei.ttc')
+font = FontProperties(fname=chinese_font_path)
 
 sid = sys.argv[1]
 sid = int(sid)
@@ -46,7 +49,7 @@ axv = ax.twinx()
 axv.fill_between(ddfreshape['date'].values, 0, ddfreshape['lot'].values, facecolor='#87CEFA', alpha=.4)
 axv.set_ylim(0, max(3*ddfreshape['lot'].values))
 axv.axes.yaxis.set_ticklabels([])
-#ax1v.grid(False)
+axv.grid(False)
 
 # AX-Yield
 axpe = plt.subplot2grid((7,4), (0,0), sharex=ax, rowspan=1, colspan=4, axisbg='#07000d')

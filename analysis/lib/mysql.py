@@ -1,6 +1,9 @@
+import sys
+sys.path.append('../')
+
 import pymysql
 import pandas as pd
-from .settings import *
+from settings import *
 
 db = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock', charset='utf8')
 
