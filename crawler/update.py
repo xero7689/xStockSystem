@@ -19,23 +19,12 @@ def find_update_date(sid):
 
 if __name__ == '__main__':
     db = StockMySQL('127.0.0.1', USER, PASSWORD, 'taiwan_stock')
-    #dsid = db.select_distinct_sid_from_daily()
-    #sid = int(sys.argv[1])
-    """
-    for sid in dsid:
-        sid = sid[0]
-        date_list = find_update_date(sid)
-        for date in until_today_generator(2018):
-            dd = crawl_daily_data(sid, date, False)
-            bd = crawl_daily_bwibbw(sid, date, False)
-            insert_daily_data(sid, dd)
-            insert_bwibbw_data(sid, bd)
-    """
-    sid = 2609
+    sid = int(sys.argv[1])
+    use_proxy = int(sys.argv[2])
     date_list = find_update_date(sid)
     for date in until_today_generator(2018):
-        dd = crawl_daily_data(sid, date, False)
-        bd = crawl_daily_bwibbw(sid, date, False)
+        dd = crawl_daily_data(sid, date, use_proxy)
+        bd = crawl_daily_bwibbw(sid, date, use_proxy)
         insert_daily_data(sid, dd)
         insert_bwibbw_data(sid, bd)
         time.sleep(random.randint(5, 15))
