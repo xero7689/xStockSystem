@@ -22,8 +22,12 @@ sid = int(sid)
 df = get_all_stock_info(sid)
 zh_name = get_zh_name(sid)[0][0]
 
-# Parse Data
+# Transform `date` field and setting as index
 df['date'] = pd.to_datetime(df['date'])
+df = df.set_index(pd.DatetimeIndex(df['date']))
+df = df.sort_index()
+
+# Mask to limit the plot range
 mask = df['date'] > '2017-12-01'
 ddf = df[mask]
 
