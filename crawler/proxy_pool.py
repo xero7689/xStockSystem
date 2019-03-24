@@ -54,6 +54,9 @@ class ProxyPool(object):
             delay, count, ip, port = heappop(self.proxy_hq)
             return (delay, count, ip, port)
 
+    def request(self, url):
+        pass
+
 if __name__ == '__main__':
     pp = ProxyPool()
     print(pp.get())

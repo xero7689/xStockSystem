@@ -1,17 +1,15 @@
-import aiohttp
-import asyncio
-import async_timeout
+import requests
 import pymysql
 import time
 import hashlib
 from lib import color_print
 from settings import *
 
+# Python3 aiohttp currently doesn'y support https proxy
 get_null_delay_proxy = '''
     SELECT id, INET6_NTOA(ip), port, country, https
     FROM ssl_proxy
-    WHERE https = 0
-    AND delay IS NULL
+    WHERE delay IS NULL
 '''
 
 get_low_delay_proxy = '''
@@ -30,6 +28,7 @@ cursor.execute(get_null_delay_proxy)
 null_delay_proxies = list(cursor.fetchall())
 cursor.close()
 con.commit()
+
 #queue = asyncio.Queue()
 queue = []
 for proxy in low_delay_proxies:
@@ -48,6 +47,45 @@ _update_ssl_proxy = """
     WHERE id = %s;
 """
 
+def profit_proxy(proxy_info):
+    cursor = con.cursor()
+    pid, ip, port, country, schema = proxy_info
+    proxy = '{}://{}:{}'.format(schema, ip, port)
+    proxies = {schema: proxy}
+    now = time.time()
+    response = requests.get(twsec_url, proxies=proxies)
+    delay = time.time() - now
+    if response.status_code == 200:
+        cursor.execute(_update_ssl_proxy, (delay, pid))
+        prefix = color_print.make_string('[+]', 'green')
+    else:
+        delay = response.status
+        cursor.execute(_update_ssl_proxy, (delay, pid))
+        prefix = color_print.make_string('[-][{}]'.format(response.status), 'red')
+
+    if delay < 1:
+        delay = color_print.make_string('{}'.format(delay), 'green')
+    elif 5 > delay >= 1:
+        delay = color_print.make_string('{}'.format(delay), 'blue')
+    else:
+        delay = color_print.make_string('{}'.format(delay), 'red')
+        
+    cursor.close()
+    con.commit()
+    print('{} {}://{}:{}\t{}\t{}'.format(prefix, schema, ip, port, country, delay))
+
+if __name__ == '__main__':
+    #tasks = []
+    for proxy_info in queue:
+        pid, ip, port, country, https = proxy_info
+        if https is 1:
+            https = 'https'
+        else:
+            https = 'http'
+        proxy_info = pid, ip, port, country, https
+        profit_proxy(proxy_info)
+
+"""
 async def profit(session, pid, ip, port, https, country):
     global con
     cursor = con.cursor()
@@ -102,14 +140,8 @@ async def main(proxy_info):
         print('[*] Create session: {}://{}:{}({})'.format(https, ip, port, country))
         await profit(session, pid, ip, port, https, country)
 
-tasks = []
-for proxy_info in queue:
-    pid, ip, port, country, https = proxy_info
-    if https is 1:
-        https = 'https'
-    else:
-        https = 'http'
-    tasks.append(asyncio.ensure_future(main((pid, ip, port, https, country))))
+
 loop = asyncio.get_event_loop()
 loop.run_until_complete(asyncio.wait(tasks))
 con.close()
+"""
