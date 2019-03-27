@@ -2,14 +2,15 @@ import sys, os
 import datetime
 import time
 import random
-from daily import *
+
+from lib.daily import *
 from lib.mysqlqueue import StockMySQL
-from settings import USER, PASSWORD
-from utils import until_today_generator
+from lib.utils import until_today_generator
+from conf.settings import MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD
 
 def find_update_date(sid):
     date_list = []
-    db = StockMySQL('127.0.0.1', USER, PASSWORD, 'taiwan_stock')
+    db = StockMySQL(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, 'taiwan_stock')
     latest_date = db.select_latest_date_by_sid(sid)[0][0]
     today = datetime.datetime.today().date()
     delta_days = (today - latest_date).days
@@ -18,7 +19,7 @@ def find_update_date(sid):
     return date_list
 
 if __name__ == '__main__':
-    db = StockMySQL('127.0.0.1', USER, PASSWORD, 'taiwan_stock')
+    db = StockMySQL(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, 'taiwan_stock')
     sid = int(sys.argv[1])
     use_proxy = int(sys.argv[2])
     date_list = find_update_date(sid)

@@ -2,14 +2,14 @@
 import sys, os
 import pymysql
 import csv
-from settings import *
+from conf.settings import *
 
 OUTPUT_DIR = './report'
 
 date = sys.argv[1]
 cate = sys.argv[2]
 
-con = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock',
+con = pymysql.connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, 'taiwan_stock',
                       charset='utf8')
 cursor = con.cursor()
 

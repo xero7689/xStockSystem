@@ -1,7 +1,7 @@
 import sys
 import pymysql
 import datetime
-from settings import *
+from conf.settings import *
 
 class pe_obj(object):
     def __init__(self, year):
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         try:
             eps = eps_2317[str(year)]
         except KeyError as ke:
-            print year
+            print(year)
             continue
         _min = min(pe_list)*eps
         _avg = (sum(pe_list)/len(pe_list))*eps

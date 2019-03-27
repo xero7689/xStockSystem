@@ -6,7 +6,7 @@ import json
 import datetime
 import time
 import re
-from settings import *
+from conf.settings import *
 
 class BWIBBU_Crawler(object):
     bwibbu_url = 'http://www.tse.com.tw/exchangeReport/BWIBBU?response=json&date={}&stockNo={}'
@@ -24,7 +24,7 @@ class BWIBBU_Crawler(object):
     VALUES {}
     """
     def __init__(self):
-        self.db_con = pymysql.connect(HOST, USER, PASSWORD, 'taiwan_stock')
+        self.db_con = pymysql.connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, 'taiwan_stock')
 
     def date_is_out_of_range(self, date):
         current_date = int(datetime.datetime.now().strftime('%Y%m01'))
