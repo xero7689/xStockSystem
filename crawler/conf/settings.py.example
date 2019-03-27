@@ -1,0 +1,4 @@
+# MySQL settings
+HOST = ''
+USER = ''
+PASSWORD = ''
