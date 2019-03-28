@@ -13,10 +13,6 @@ colors = {
         'grey': grey
         }
 
-def make_string(msg, color='white'):
-    c = colors[color]
-    return "{}{}{}".format(c, msg, '\x1b[0m')
-
 def color_print(msg, color='white'):
     c = colors[color]
     print("{}{}{}".format(c, msg, '\x1b[0m'))
